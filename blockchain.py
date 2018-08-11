@@ -49,6 +49,9 @@ class BlockChain:
         prev_block = chain[0]
         block_i = 1 #block index
         while block_i < len(chain):
+            
+            #checking if @param prev_hash of next block is equal the 
+            # hash of prev block
             block = chain[block_i]
             if block['prev_hash'] != self.hash(prev_block):
                 return False
@@ -57,6 +60,13 @@ class BlockChain:
             hash_operation = hashlib.sha256(str(proof**2 - prev_proof**2).encode()).hexdigest()
             if hash_operation[:4] != '0000':
                 return False
+
+            prev_block = block
+
+            block_i += 1
+        return True
+
+
 
         
 
