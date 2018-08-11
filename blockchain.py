@@ -8,7 +8,7 @@ from flask import Flask, jsonify
 class BlockChain:
     def __init__(self):
         self.chain = []  #initialising the chain
-        #Creating the genisis block
+        #Creating the genesis block
         self.create_block(proof = 1 , prev_hash = '0')
 
         #function to create block
@@ -26,7 +26,7 @@ class BlockChain:
     def get_prev_block(self):
         return self.chain[-1]
 
-#The proof of work miners have to solve
+    #The proof of work miners have to solve
     def pow(self, prev_proof):
         #checking if the new proof is below certain value
         new_proof = 1
@@ -40,7 +40,7 @@ class BlockChain:
         return new_proof
     
     def hash(self, block):
-        #converting dictionary to block 
+        #converting dictionary to hash 
         encoded_block = json.dumps(block, sort_keys = True).encode()
         return hashlib.sha256(encoded_block).hexdigest()
 
@@ -66,7 +66,36 @@ class BlockChain:
             block_i += 1
         return True
 
+#webapp
+app = Flask(__name__)
 
+blockchain = BlockChain()
 
-        
+@app.route('/mine_block', methods = ['GET'])
+def mine_block():
+    prev_block = blockchain.get_prev_block()
+    prev_proof = prev_block['proof']
+    proof = blockchain.pow(prev_proof)
+    prev_hash = blockchain.hash(prev_block)
+    block = blockchain.create_block(proof, prev_hash)
+    response = {
+        'message':'Mined the block',
+        'index' : block['index'],
+        'timestamp': block['timestamp'],
+        'proof': block['proof'],
+        'prev_hash' : block['prev_hash']
+    }
+
+    return jsonify(response), 200
+
+@app.route('/get_chain',methods = ['GET'])
+def get_chain():
+    response = {
+        'chain' : blockchain.chain,
+        'length' : len(blockchain.chain)
+    }    
+    return jsonify(response), 200
+
+app.run('0.0.0.0', 5000)
+
 
